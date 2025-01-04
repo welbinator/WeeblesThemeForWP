@@ -1,3 +1,16 @@
+.og-image-uploader {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+
+	#weebles_meta_og_image_preview {
+		max-width: 100px !important;
+		max-height: 100px !important;
+		display: block !important;
+		margin-top: 1em;
+	}
+}
+
 #wp-rig-settings-page {
 	.components-panel__row {
 		flex-direction: column;

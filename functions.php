@@ -70,6 +70,14 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 // Initialize the theme.
 call_user_func( 'WP_Rig\WP_Rig\wp_rig' );
 
+// Enqueues media uploader
+function weebles_enqueue_media_uploader($hook) {
+    if ('post.php' === $hook || 'post-new.php' === $hook) {
+        wp_enqueue_media();
+    }
+}
+add_action('admin_enqueue_scripts', 'weebles_enqueue_media_uploader');
+
 /**
  * Adds the Weebles Theme Settings meta box to all public post types.
  */
@@ -101,8 +109,13 @@ function weebles_meta_box_callback($post) {
     // Retrieve saved meta values.
     $hide_title = get_post_meta($post->ID, '_weebles_hide_title', true);
     $layout = get_post_meta($post->ID, '_weebles_layout', true);
+    $meta_title = get_post_meta($post->ID, '_weebles_meta_title', true);
+    $meta_description = get_post_meta($post->ID, '_weebles_meta_description', true);
+    $meta_og_image = get_post_meta($post->ID, '_weebles_meta_og_image', true);
 
-    // Render the "Hide Title" checkbox.
+    // Page/Post Settings Section
+    echo '<h3>' . __('Page/Post Settings', 'weebles') . '</h3>';
+
     echo '<p>';
     echo '<label>';
     echo '<input type="checkbox" name="weebles_hide_title" value="1" ' . checked($hide_title, '1', false) . ' />';
@@ -110,7 +123,6 @@ function weebles_meta_box_callback($post) {
     echo '</label>';
     echo '</p>';
 
-    // Render the "Layout" dropdown.
     echo '<p>';
     echo '<label for="weebles_layout">' . __('Choose Layout:', 'weebles') . '</label>';
     echo '<select name="weebles_layout" id="weebles_layout">';
@@ -119,7 +131,29 @@ function weebles_meta_box_callback($post) {
     echo '<option value="full"' . selected($layout, 'full', false) . '>' . __('Full Width', 'weebles') . '</option>';
     echo '</select>';
     echo '</p>';
+
+    // SEO Settings Section
+    echo '<h3>' . __('SEO Settings', 'weebles') . '</h3>';
+
+    echo '<p>';
+    echo '<label for="weebles_meta_title">' . __('Custom Meta Title:', 'weebles') . '</label>';
+    echo '<input type="text" name="weebles_meta_title" id="weebles_meta_title" value="' . esc_attr($meta_title) . '" style="width: 100%;" />';
+    echo '</p>';
+
+    echo '<p>';
+    echo '<label for="weebles_meta_description">' . __('Custom Meta Description:', 'weebles') . '</label>';
+    echo '<textarea name="weebles_meta_description" id="weebles_meta_description" style="width: 100%; height: 4em;">' . esc_textarea($meta_description) . '</textarea>';
+    echo '</p>';
+
+    echo '<div class="og-image-uploader">';
+    echo '<label for="weebles_meta_og_image">' . __('Custom Open Graph Image:', 'weebles') . '</label>';
+    echo '<input type="hidden" name="weebles_meta_og_image" id="weebles_meta_og_image" value="' . esc_url($meta_og_image) . '" />';
+    echo '<button type="button" class="button" id="weebles_upload_image_button">' . __('Upload Image', 'weebles') . '</button>';
+    echo '<img src="' . esc_url($meta_og_image) . '" id="weebles_meta_og_image_preview" style="max-width: 100%; margin-top: 1em; ' . (empty($meta_og_image) ? 'display:none;' : '') . '" />';
+    echo '</div>';
 }
+
+
 
 
 /**
@@ -152,7 +186,26 @@ function weebles_save_meta_box_data($post_id) {
         $layout = sanitize_text_field($_POST['weebles_layout']);
         update_post_meta($post_id, '_weebles_layout', $layout);
     }
+
+    // Save the "Custom Meta Title" setting.
+    if (isset($_POST['weebles_meta_title'])) {
+        $meta_title = sanitize_text_field($_POST['weebles_meta_title']);
+        update_post_meta($post_id, '_weebles_meta_title', $meta_title);
+    }
+
+    // Save the "Custom Meta Description" setting.
+    if (isset($_POST['weebles_meta_description'])) {
+        $meta_description = sanitize_textarea_field($_POST['weebles_meta_description']);
+        update_post_meta($post_id, '_weebles_meta_description', $meta_description);
+    }
+
+	// Save the OG image setting.
+	if (isset($_POST['weebles_meta_og_image'])) {
+		$meta_og_image = esc_url_raw($_POST['weebles_meta_og_image']);
+		update_post_meta($post_id, '_weebles_meta_og_image', $meta_og_image);
+	}
 }
+
 
 add_action('save_post', 'weebles_save_meta_box_data');
 
@@ -190,3 +243,45 @@ function weebles_add_body_class($classes) {
     return $classes;
 }
 add_filter('body_class', 'weebles_add_body_class');
+
+/**
+ * Outputs SEO, Open Graph, and Twitter meta tags in the <head>.
+ */
+function weebles_output_meta_tags() {
+    if (is_singular()) {
+        global $post;
+
+        // Get custom meta values.
+        $meta_title = get_post_meta($post->ID, '_weebles_meta_title', true) ?: get_the_title($post);
+        $meta_description = get_post_meta($post->ID, '_weebles_meta_description', true) ?: get_bloginfo('description');
+        $meta_image = get_post_meta($post->ID, '_weebles_meta_og_image', true) ?: get_the_post_thumbnail_url($post->ID, 'full') ?: '';
+        $meta_url = get_permalink($post);
+
+        // SEO Meta Tags.
+        if (!empty($meta_title)) {
+            echo '<title>' . esc_html($meta_title) . '</title>' . PHP_EOL;
+        }
+        if (!empty($meta_description)) {
+            echo '<meta name="description" content="' . esc_attr($meta_description) . '">' . PHP_EOL;
+        }
+
+        // Open Graph Tags.
+        echo '<meta property="og:title" content="' . esc_attr($meta_title) . '">' . PHP_EOL;
+        echo '<meta property="og:description" content="' . esc_attr($meta_description) . '">' . PHP_EOL;
+        echo '<meta property="og:url" content="' . esc_url($meta_url) . '">' . PHP_EOL;
+        echo '<meta property="og:type" content="article">' . PHP_EOL;
+        if (!empty($meta_image)) {
+            echo '<meta property="og:image" content="' . esc_url($meta_image) . '">' . PHP_EOL;
+        }
+
+        // Twitter Tags.
+        echo '<meta name="twitter:card" content="summary_large_image">' . PHP_EOL;
+        echo '<meta name="twitter:title" content="' . esc_attr($meta_title) . '">' . PHP_EOL;
+        echo '<meta name="twitter:description" content="' . esc_attr($meta_description) . '">' . PHP_EOL;
+        if (!empty($meta_image)) {
+            echo '<meta name="twitter:image" content="' . esc_url($meta_image) . '">' . PHP_EOL;
+        }
+    }
+}
+add_action('wp_head', 'weebles_output_meta_tags');
+
