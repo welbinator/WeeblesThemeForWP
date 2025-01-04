@@ -69,3 +69,92 @@ if ( defined( 'WP_CLI' ) && WP_CLI ) {
 
 // Initialize the theme.
 call_user_func( 'WP_Rig\WP_Rig\wp_rig' );
+
+/**
+ * Adds the Weebles Theme Settings meta box to all public post types.
+ */
+function weebles_add_meta_box() {
+    $post_types = get_post_types(['public' => true]);
+
+    foreach ($post_types as $post_type) {
+        add_meta_box(
+            'weebles_theme_settings',
+            __('Weebles Theme Settings', 'weebles'),
+            'weebles_meta_box_callback',
+            $post_type,
+            'normal',
+            'default'
+        );
+    }
+}
+add_action('add_meta_boxes', 'weebles_add_meta_box');
+
+/**
+ * Callback function to render the Weebles Theme Settings meta box.
+ *
+ * @param WP_Post $post The post object.
+ */
+function weebles_meta_box_callback($post) {
+    // Add a nonce field for security.
+    wp_nonce_field('weebles_meta_box_nonce', 'weebles_meta_box_nonce_field');
+
+    // Retrieve the saved value for hiding the title.
+    $hide_title = get_post_meta($post->ID, '_weebles_hide_title', true);
+
+    // Render the checkbox.
+    echo '<p>';
+    echo '<label>';
+    echo '<input type="checkbox" name="weebles_hide_title" value="1" ' . checked($hide_title, '1', false) . ' />';
+    echo __('Hide Page Title', 'weebles');
+    echo '</label>';
+    echo '</p>';
+}
+
+/**
+ * Saves the Weebles Theme Settings meta box data.
+ *
+ * @param int $post_id The ID of the current post.
+ */
+function weebles_save_meta_box_data($post_id) {
+    // Verify the nonce for security.
+    if (!isset($_POST['weebles_meta_box_nonce_field']) ||
+        !wp_verify_nonce($_POST['weebles_meta_box_nonce_field'], 'weebles_meta_box_nonce')) {
+        return;
+    }
+
+    // Check for autosave and user permissions.
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+        return;
+    }
+
+    if (!current_user_can('edit_post', $post_id)) {
+        return;
+    }
+
+    // Save the "Hide Title" setting.
+    $hide_title = isset($_POST['weebles_hide_title']) ? '1' : '';
+    update_post_meta($post_id, '_weebles_hide_title', $hide_title);
+}
+add_action('save_post', 'weebles_save_meta_box_data');
+
+/**
+ * Filters the content to conditionally hide the page title.
+ *
+ * @param string $content The post content.
+ * @return string The filtered content.
+ */
+function weebles_hide_title($content) {
+    if (is_singular()) {
+        global $post;
+        $hide_title = get_post_meta($post->ID, '_weebles_hide_title', true);
+
+        if ($hide_title === '1') {
+            // Add a style to hide the title.
+            $content = '<style>.entry-title { display: none; }</style>' . $content;
+        }
+    }
+
+    return $content;
+}
+add_filter('the_content', 'weebles_hide_title');
+
