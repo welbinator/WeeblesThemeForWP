@@ -7,6 +7,9 @@
 
 :root {
 	--content-width: 45rem;
+	--content-width-boxed: 75rem;
+	--content-width-full: unset;
+
 	--dropdown-symbol-width: 0.7em;
 
 	/* Typography */
@@ -43,4 +46,12 @@
 	--color-theme-white: #ecf0f1;
 	--color-custom-daylight: #97c0b7;
 	--color-custom-sun: #eee9d1;
+}
+
+.layout-boxed {
+    --content-width: var(--content-width-boxed);
+}
+
+.layout-full {
+    --content-width: var(--content-width-full);
 }

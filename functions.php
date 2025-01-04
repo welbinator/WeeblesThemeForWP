@@ -98,17 +98,29 @@ function weebles_meta_box_callback($post) {
     // Add a nonce field for security.
     wp_nonce_field('weebles_meta_box_nonce', 'weebles_meta_box_nonce_field');
 
-    // Retrieve the saved value for hiding the title.
+    // Retrieve saved meta values.
     $hide_title = get_post_meta($post->ID, '_weebles_hide_title', true);
+    $layout = get_post_meta($post->ID, '_weebles_layout', true);
 
-    // Render the checkbox.
+    // Render the "Hide Title" checkbox.
     echo '<p>';
     echo '<label>';
     echo '<input type="checkbox" name="weebles_hide_title" value="1" ' . checked($hide_title, '1', false) . ' />';
     echo __('Hide Page Title', 'weebles');
     echo '</label>';
     echo '</p>';
+
+    // Render the "Layout" dropdown.
+    echo '<p>';
+    echo '<label for="weebles_layout">' . __('Choose Layout:', 'weebles') . '</label>';
+    echo '<select name="weebles_layout" id="weebles_layout">';
+    echo '<option value="narrow"' . selected($layout, 'narrow', false) . '>' . __('Narrow', 'weebles') . '</option>';
+    echo '<option value="boxed"' . selected($layout, 'boxed', false) . '>' . __('Boxed', 'weebles') . '</option>';
+    echo '<option value="full"' . selected($layout, 'full', false) . '>' . __('Full Width', 'weebles') . '</option>';
+    echo '</select>';
+    echo '</p>';
 }
+
 
 /**
  * Saves the Weebles Theme Settings meta box data.
@@ -134,7 +146,14 @@ function weebles_save_meta_box_data($post_id) {
     // Save the "Hide Title" setting.
     $hide_title = isset($_POST['weebles_hide_title']) ? '1' : '';
     update_post_meta($post_id, '_weebles_hide_title', $hide_title);
+
+    // Save the "Layout" setting.
+    if (isset($_POST['weebles_layout'])) {
+        $layout = sanitize_text_field($_POST['weebles_layout']);
+        update_post_meta($post_id, '_weebles_layout', $layout);
+    }
 }
+
 add_action('save_post', 'weebles_save_meta_box_data');
 
 /**
@@ -158,3 +177,16 @@ function weebles_hide_title($content) {
 }
 add_filter('the_content', 'weebles_hide_title');
 
+function weebles_add_body_class($classes) {
+    if (is_singular()) {
+        global $post;
+        $layout = get_post_meta($post->ID, '_weebles_layout', true);
+
+        if ($layout && $layout !== 'narrow') {
+            $classes[] = 'layout-' . $layout;
+        }
+    }
+
+    return $classes;
+}
+add_filter('body_class', 'weebles_add_body_class');
