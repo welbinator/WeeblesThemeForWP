@@ -87,14 +87,14 @@ class Component implements Component_Interface, Templating_Component_Interface {
 	}
 
 	/**
-	 * Adds an admin menu page for WP Rig settings.
+	 * Adds an admin menu page for Weebles Settings.
 	 *
 	 * @return void
 	 */
 	public function add_admin_menu(): void {
 		add_menu_page(
-			__( 'WP Rig Settings', 'wp-rig' ),
-			__( 'WP Rig Settings', 'wp-rig' ),
+			__( 'Weebles Settings', 'wp-rig' ),
+			__( 'Weebles Settings', 'wp-rig' ),
 			'manage_options',
 			'wp-rig-settings',
 			array( $this, 'render_settings_page' )
