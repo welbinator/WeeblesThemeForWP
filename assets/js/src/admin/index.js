@@ -37,7 +37,6 @@ const textControlTypes = [
 import useOgImageUploader from "./og-image-uploader";
 import adminMetaBox from './admin-meta-box';
 
-// adminMetaBox();
 
 const SettingsPage = () => {
 	const [settings, setSettings] = useState(
