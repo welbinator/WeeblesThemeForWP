@@ -285,3 +285,120 @@ function weebles_output_meta_tags() {
 }
 add_action('wp_head', 'weebles_output_meta_tags');
 
+/**
+ * Adds the Custom Code meta box below the existing one for all public post types.
+ */
+function weebles_add_custom_code_meta_box() {
+    $post_types = get_post_types(['public' => true]);
+
+    foreach ($post_types as $post_type) {
+        add_meta_box(
+            'weebles_custom_code',
+            __('Custom Code', 'weebles'),
+            'weebles_custom_code_meta_box_callback',
+            $post_type,
+            'normal',
+            'default'
+        );
+    }
+}
+add_action('add_meta_boxes', 'weebles_add_custom_code_meta_box');
+
+/**
+ * Callback function to render the Custom Code meta box.
+ *
+ * @param WP_Post $post The post object.
+ */
+function weebles_custom_code_meta_box_callback($post) {
+    // Add a nonce field for security.
+    wp_nonce_field('weebles_custom_code_nonce', 'weebles_custom_code_nonce_field');
+
+    // Retrieve saved meta values.
+    $header_code = get_post_meta($post->ID, '_weebles_header_code', true);
+    $footer_code = get_post_meta($post->ID, '_weebles_footer_code', true);
+
+    echo '<p>' . __('Add custom code to the header or footer for this post/page.', 'weebles') . '</p>';
+
+    echo '<p>';
+    echo '<label for="weebles_header_code">' . __('Header Code:', 'weebles') . '</label>';
+    echo '<textarea name="weebles_header_code" id="weebles_header_code" style="width: 100%; height: 6em;">' . esc_textarea($header_code) . '</textarea>';
+    echo '</p>';
+
+    echo '<p>';
+    echo '<label for="weebles_footer_code">' . __('Footer Code:', 'weebles') . '</label>';
+    echo '<textarea name="weebles_footer_code" id="weebles_footer_code" style="width: 100%; height: 6em;">' . esc_textarea($footer_code) . '</textarea>';
+    echo '</p>';
+}
+
+/**
+ * Saves the Custom Code meta box data.
+ *
+ * @param int $post_id The ID of the current post.
+ */
+function weebles_save_custom_code_meta_box_data($post_id) {
+    // Verify the nonce for security.
+    if (!isset($_POST['weebles_custom_code_nonce_field']) ||
+        !wp_verify_nonce($_POST['weebles_custom_code_nonce_field'], 'weebles_custom_code_nonce')) {
+        return;
+    }
+
+    // Check for autosave and user permissions.
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+        return;
+    }
+
+    if (!current_user_can('edit_post', $post_id)) {
+        return;
+    }
+
+    // Allow specific tags, including <script>.
+    $allowed_tags = [
+        'script' => [
+            'type' => true,
+        ],
+    ];
+
+    // Save the "Header Code" setting.
+    if (isset($_POST['weebles_header_code'])) {
+        $header_code = wp_kses($_POST['weebles_header_code'], $allowed_tags);
+        update_post_meta($post_id, '_weebles_header_code', $header_code);
+    }
+
+    // Save the "Footer Code" setting.
+    if (isset($_POST['weebles_footer_code'])) {
+        $footer_code = wp_kses($_POST['weebles_footer_code'], $allowed_tags);
+        update_post_meta($post_id, '_weebles_footer_code', $footer_code);
+    }
+}
+
+add_action('save_post', 'weebles_save_custom_code_meta_box_data');
+
+/**
+ * Outputs custom header and footer code.
+ */
+function weebles_output_custom_code() {
+    if (is_singular()) {
+        global $post;
+
+        // Get the custom header code.
+        $header_code = get_post_meta($post->ID, '_weebles_header_code', true);
+        if (!empty($header_code)) {
+            echo $header_code; // Already sanitized when saving.
+        }
+    }
+}
+add_action('wp_head', 'weebles_output_custom_code');
+
+function weebles_output_custom_footer_code() {
+    if (is_singular()) {
+        global $post;
+
+        // Get the custom footer code.
+        $footer_code = get_post_meta($post->ID, '_weebles_footer_code', true);
+        if (!empty($footer_code)) {
+            echo $footer_code; // Already sanitized when saving.
+        }
+    }
+}
+add_action('wp_footer', 'weebles_output_custom_footer_code');
+
