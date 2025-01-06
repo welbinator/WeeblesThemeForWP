@@ -16,6 +16,7 @@ import prodStringReplace from './gulp/prodStringReplace.js';
 import prodCompress from './gulp/prodCompress.js';
 import minimist from 'minimist';
 
+
 // Create browserSync instance
 browserSync.create();
 
@@ -115,7 +116,8 @@ const php = (done) => phpTask(runPhpcs, done);
 
 const build = gulp.series(
 	gulp.parallel(cleanCSS, cleanJS),
-	lintTasks, // Add linting tasks here conditionally
+	lintTasks,
+	copyLibraries,
 	gulp.parallel(buildJS, buildCSS),
 	gulp.parallel(images, php)
 );
@@ -147,5 +149,15 @@ gulp.task(
 	)
 );
 
+function copyLibraries() {
+    return gulp.src([
+        './node_modules/bootstrap/dist/css/bootstrap.min.css',
+        './node_modules/bootstrap/dist/js/bootstrap.bundle.min.js',
+        
+    ])
+    .pipe(gulp.dest('assets/libs'));
+}
+
 // Export tasks using ES Modules syntax
 export { dev as default, generateCert, build, bundle };
+

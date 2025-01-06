@@ -7,35 +7,25 @@
       },
       "tabContent": {
         "fields": [
+          
           {
-            "name": "option1",
-            "label": "Option 1",
-            "type": "text"
-          },
-          {
-            "name": "option2",
-            "label": "Option 2",
-            "type": "text"
-          },
-          {
-            "name": "option7",
-            "label": "Robs Custom Setting",
-            "type": "text"
-          },
-          {
-            "name": "option8",
-            "label": "Robs Now with Gulp?",
-            "type": "text"
-          },
-          {
-            "name": "option5",
-            "label": "On/Off",
-            "type": "toggle"
-          },
-          {
-            "name": "option9",
-            "label": "Live/Die",
-            "type": "toggle"
+            "name": "css_library",
+            "label": "CSS Library",
+            "type": "select",
+            "options": [
+              {
+                "label": "None",
+                "value": "none"
+              },
+              {
+                "label": "Bootstrap",
+                "value": "bootstrap"
+              },
+              {
+                "label": "Tailwind",
+                "value": "tailwind"
+              }
+            ]
           }
         ]
       }
