@@ -86,7 +86,7 @@ function weebles_add_meta_box() {
 
     foreach ($post_types as $post_type) {
         add_meta_box(
-            'weebles_theme_settings',
+            'wp_rig_theme_settings',
             __('Weebles Theme Settings', 'weebles'),
             'weebles_meta_box_callback',
             $post_type,
@@ -352,9 +352,21 @@ function weebles_save_custom_code_meta_box_data($post_id) {
     }
 
     // Allow specific tags, including <script>.
-    $allowed_tags = [
+	$allowed_tags = [
         'script' => [
+            'src' => true,
             'type' => true,
+            'async' => true,
+            'defer' => true,
+        ],
+        'style' => [],
+        'link' => [
+            'rel' => true,
+            'href' => true,
+        ],
+        'meta' => [
+            'name' => true,
+            'content' => true,
         ],
     ];
 
@@ -385,6 +397,7 @@ function weebles_output_custom_code() {
         if (!empty($header_code)) {
             echo $header_code; // Already sanitized when saving.
         }
+		
     }
 }
 add_action('wp_head', 'weebles_output_custom_code');
@@ -401,4 +414,21 @@ function weebles_output_custom_footer_code() {
     }
 }
 add_action('wp_footer', 'weebles_output_custom_footer_code');
+
+function weebles_enqueue_css_libraries() {
+    $settings = get_option('wp_rig_theme_settings', []);
+    $css_library = isset($settings['css_library']) ? $settings['css_library'] : 'none';
+
+    if ($css_library === 'bootstrap') {
+        wp_enqueue_style('bootstrap-css', get_template_directory_uri() . '/assets/libs/bootstrap.min.css', [], '5.3.0');
+        wp_enqueue_script('bootstrap-js', get_template_directory_uri() . '/assets/libs/bootstrap.bundle.min.js', [], '5.3.0', true);
+    } elseif ($css_library === 'tailwind') {
+        // Use wp_add_inline_script to add the Tailwind CDN to the head.
+        add_action('wp_head', function() {
+            echo '<script src="https://cdn.tailwindcss.com"></script>';
+        });
+    }
+}
+add_action('wp_enqueue_scripts', 'weebles_enqueue_css_libraries');
+
 

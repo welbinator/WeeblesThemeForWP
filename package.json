@@ -26,7 +26,7 @@
     "@wordpress/scripts": "^30.5.1",
     "ajv": "^6.12.3",
     "ansi-colors": "^4.1.1",
-    "autoprefixer": "^9.6.1",
+    "autoprefixer": "^9.8.8",
     "browser-sync": "^2.27.10",
     "create-cert": "^1.0.6",
     "cross-env": "^5.2.0",
@@ -52,6 +52,7 @@
     "gulp-esbuild": "^0.11.0",
     "gulp-imagemin": "^9.1.0",
     "gulp-newer": "^1.4.0",
+    "gulp-postcss": "^10.0.0",
     "gulp-shell": "^0.8.0",
     "gulp-sort": "^2.0.0",
     "gulp-sourcemaps": "^3.0.0",
@@ -66,7 +67,7 @@
     "mississippi": "^4.0.0",
     "mkdirp": "^0.5.1",
     "npm-run-all": "^4.1.5",
-    "postcss": "^8.0.0",
+    "postcss": "^8.4.49",
     "postcss-calc": "^7.0.1",
     "postcss-cli": "^9.0.2",
     "postcss-import": "^14.0.0",
@@ -78,6 +79,7 @@
     "replacestream": "^4.0.3",
     "rimraf": "^2.6.3",
     "stylint": "^2.0.0",
+    "tailwindcss": "^3.4.17",
     "through2": "^4.0.2",
     "typescript-eslint": "^8.12.2",
     "vinyl": "^2.2.0"
@@ -125,5 +127,9 @@
     "bundle": "cross-env NODE_ENV=production gulp bundle",
     "bundle:phpcs": "cross-env NODE_ENV=production gulp bundle --phpcs",
     "bundle:check-all": "cross-env NODE_ENV=production gulp bundle --phpcs"
+  },
+  "dependencies": {
+    "bootstrap": "^5.3.3",
+    "gulp-rename": "^2.0.0"
   }
 }
