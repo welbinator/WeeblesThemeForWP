@@ -1,12 +1,12 @@
 {
   "theme": {
     "PHPNamespace": "WP_Rig\\WP_Rig",
-    "slug": "wp-rig-test",
-    "name": "WP Rig Test",
-    "theme_uri": "https://github.com/wprig/wprig/",
-    "author": "The WP Rig Contributors",
+    "slug": "weebles-wp-theme",
+    "name": "Weebles WP Theme",
+    "theme_uri": "https://github.com/welbinator/WeeblesThemeForWP",
+    "author": "James Welbes",
     "author_uri": "https://wprig.io/",
-    "description": "A progressive theme development rig for WordPress.",
+    "description": "A WordPress theme based on WP Rig (wprig.io)",
     "version": "1.0.0"
   }
 }
